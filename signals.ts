@@ -37,3 +37,32 @@ export const createEffect = (callback: () => void) => {
 
   currentEffect = null;
 }
+
+export const createMemo = (callback: () => void) => {
+  let cachedResult: any;
+  let subscribers: any = []
+
+  currentEffect = {
+    run: () => {
+      cachedResult = callback();
+
+      for (let sub of subscribers) {
+        sub.run();
+      }
+    }
+  }
+
+  currentEffect.run();
+
+  currentEffect = null;
+
+  const getter = () => {
+    if (currentEffect) {
+      subscribers.push(currentEffect);
+    }
+
+    return cachedResult;
+  }
+
+  return getter;
+}
