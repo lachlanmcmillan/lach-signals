@@ -14,3 +14,17 @@ createEffect(() => console.log("Your name is not", fullName()));
 
 console.log("3. Set new firstName");
 setFirstName("Jacob");
+
+/**
+ * 1. Create Signals
+ * 2. Create Reactions
+ * Creating/Updating fullName
+ * My name is John Smith
+ * Creating/Updating fullName
+ * Your name is not John Smith
+ * 3. Set new firstName
+ * Creating/Updating fullName
+ * My name is Jacob Smith
+ * Creating/Updating fullName
+ * Your name is not Jacob Smith
+ */
