@@ -1,23 +1,21 @@
 import { createSignal, createEffect, createMemo } from './signals';
 
 console.log("1. Create");
-const [firstName, setFirstName] = createSignal("John", "firstName"  );
-const [lastName, setLastName] = createSignal("Smith", "lastName");
-const [showFullName, setShowFullName] = createSignal(true, "showFullName");
+const [firstName, setFirstName] = createSignal("John");
+const [lastName, setLastName] = createSignal("Smith");
+const [showFullName, setShowFullName] = createSignal(true);
 
 const displayName = createMemo(() => {
   if (!showFullName()) return firstName();
   return `${firstName()} ${lastName()}`
 });
 
-createEffect(function displayNameEffect() { console.log("My name is", displayName())});
+createEffect(() => { console.log("My name is", displayName())});
 
 console.log("2. Set showFullName: false");
 setShowFullName(false);
 
 console.log("3. Change lastName");
-// the problem is here - the lastName signal is still subscribed to
-// the displayName effect
 setLastName("Legend");
 
 console.log("4. Set showFullName: true");

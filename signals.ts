@@ -2,11 +2,9 @@ type Signal = [Get: () => any, Set: (value: any) => void];
 type Effect = { run: (self?: Effect) => void, cleanupFns: Set<any> };
 
 let currentEffect: Effect | null = null;
-let loop = 0;
 
-export const createSignal = (value: any, name: string): Signal => {
+export const createSignal = (value: any): Signal => {
   let store = value;
-  let storeName = name;
   // aka. effects, autoruns, watches, or computeds
   let reactions: Set<Effect> = new Set();
 
@@ -16,7 +14,7 @@ export const createSignal = (value: any, name: string): Signal => {
     // cause it to be called multiple times.
     if (currentEffect) {
       reactions.add(currentEffect);
-      // capture the current effect in the closure
+      // capture the value of currentEffect in the closure
       const capturedEffect = currentEffect;
       currentEffect.cleanupFns.add(() => {
         reactions.delete(capturedEffect);
@@ -34,8 +32,8 @@ export const createSignal = (value: any, name: string): Signal => {
     const reactionsSnapshot = new Set(reactions);
     // rerun all of the reactions that are subscribed to this signal
     for (let reaction of reactionsSnapshot) {
-      // currentEffect = reaction;
-      reaction.run(reaction);
+      currentEffect = reaction;
+      reaction.run();
     }
   }
 
@@ -46,48 +44,38 @@ export const createSignal = (value: any, name: string): Signal => {
 }
 
 export const createEffect = (callback: () => void) => {
-  const run = function runEffect(self?: Effect) {
-    if (self) {
-      currentEffect = self;
-    }
-
-    callback();
-  }
-
-  currentEffect = { run, cleanupFns: new Set() };
-
+  currentEffect = { run: callback, cleanupFns: new Set() };
   currentEffect.run();
-
   currentEffect = null;
 }
 
 export const createMemo = (callback: () => void) => {
   let cachedResult: any;
   let reactions: Set<Effect> = new Set();
-  let cleanupFns = new Set<any>();
+  let reactionCleanupFns = new Set<any>();
 
-  const run = function runMemo(self?: Effect) {
-    const reactionsSnapshot = new Set(reactions);
-    // first remove this memo from all of the reactions it was subscribed to
-    if (self) {
-      for (const cleanupFn of self.cleanupFns) {
-        cleanupFn();
-      }
-      cleanupFns.clear()
-      reactions.clear()
-      currentEffect = self;
+  const run = () => {
+    // remove this memo from all of the signals that subscribed to it.
+    // they will be re-added when calling callback() if they're still
+    // relevant
+    for (const cleanupFn of reactionCleanupFns) {
+      cleanupFn();
     }
-
+    reactionCleanupFns.clear()
     cachedResult = callback();
 
+    // reactions may be mutated while we're iterating over them
+    const reactionsSnapshot = new Set(reactions);
+    reactions.clear()
     for (let reaction of reactionsSnapshot) {
-      reaction.run(reaction);
+      currentEffect = reaction;
+      reaction.run();
     }
 
     currentEffect = null;
   }
 
-  currentEffect = { run, cleanupFns };
+  currentEffect = { run, cleanupFns: reactionCleanupFns };
 
   currentEffect.run();
 
