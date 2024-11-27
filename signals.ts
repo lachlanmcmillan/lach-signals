@@ -89,3 +89,9 @@ export const createMemo = (callback: () => void) => {
 
   return getter;
 }
+
+export const onCleanup = (cleanupFn: () => void) => {
+  if (currentEffect) {
+    currentEffect.cleanupFns.add(cleanupFn);
+  }
+}
