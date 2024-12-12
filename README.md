@@ -1,7 +1,7 @@
 # lach-signals
 
 An implementation of Signals made by "solving" for the example's in
-Ryan Carniato's article (A Hands-on Introuction to Fine-Grained Reactivity)[https://dev.to/ryansolid/a-hands-on-introduction-to-fine-grained-reactivity-3ndf].
+Ryan Carniato's article [A Hands-on Introuction to Fine-Grained Reactivity](https://dev.to/ryansolid/a-hands-on-introduction-to-fine-grained-reactivity-3ndf).
 
 
 To run:
